@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cyber Sentinel Dashboard</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="login-view" id="loginView">
+        <div class="login-art" aria-hidden="true"></div>
+        <form class="login-panel" id="loginForm">
+          <div class="brand-row">
+            <div class="brand-mark">
+               🛡️
+            </div>
+            <div>
+              <p class="eyebrow">24/7 Security Console</p>
+              <h1>Cyber Sentinel</h1>
+            </div>
+          </div>
+          <p class="lead">Secure demo login for monitoring passwords, files, ports, reports, and activity in one dark dashboard.</p>
+          <label>
+            Username
+            <input id="username" autocomplete="username" placeholder="admin" required />
+          </label>
+          <label>
+            Password
+            <input id="password" type="password" autocomplete="current-password" placeholder="admin123" required />
+          </label>
+          <button class="primary-button" type="submit">Login</button>
+          <p class="hint">Demo credentials: <strong>admin</strong> / <strong>admin123</strong></p>
+        </form>
+      </section>
+
+      <section class="dashboard hidden" id="dashboardView">
+        <aside class="sidebar">
+          <div class="brand-row compact">
+            <span class="brand-mark">CS</span>
+            <div>
+              <p class="eyebrow">Live Console</p>
+              <h2>Cyber Sentinel</h2>
+            </div>
+          </div>
+          <nav class="nav-list" aria-label="Dashboard">
+            <a href="#overview" class="active">Overview</a>
+            <a href="#password-card">Password</a>
+            <a href="#crypto-card">File Crypto</a>
+            <a href="#scanner-card">Port Scanner</a>
+            <a href="#twofa-card">2FA</a>
+            <a href="#firewall-card">Firewall</a>
+            <a href="#incident-card">Incidents</a>
+            <a href="#reports-card">Reports</a>
+          </nav>
+          <button class="ghost-button" id="logoutBtn" type="button">Logout</button>
+        </aside>
+
+        <section class="content">
+          <header class="topbar" id="overview">
+            <div>
+              <p class="eyebrow">Threat posture</p>
+              <h1>Security Dashboard</h1>
+            </div>
+            <div class="status-pill"><span></span> System Online</div>
+          </header>
+
+          <section class="metric-grid" aria-label="Security metrics">
+            <article>
+              <span>Risk Score</span>
+              <strong id="riskScore">34</strong>
+              <small>Low to moderate</small>
+            </article>
+            <article>
+              <span>Encrypted Files</span>
+              <strong id="encryptedCount">0</strong>
+              <small>Session count</small>
+            </article>
+            <article>
+              <span>Open Ports Found</span>
+              <strong id="openPortCount">0</strong>
+              <small>Last scan</small>
+            </article>
+            <article>
+              <span>Events Logged</span>
+              <strong id="eventCount">0</strong>
+              <small>Local activity</small>
+            </article>
+            <article>
+              <span>Active Incidents</span>
+              <strong id="incidentCount">0</strong>
+              <small>Open tickets</small>
+            </article>
+            <article>
+              <span>Firewall Rules</span>
+              <strong id="firewallCount">0</strong>
+              <small>Block list</small>
+            </article>
+          </section>
+
+          <section class="panel-grid">
+            <article class="panel" id="password-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Password audit</p>
+                  <h2>Password Strength Checker</h2>
+                </div>
+                <span class="tag" id="strengthLabel">Waiting</span>
+              </div>
+              <input id="passwordCheck" type="password" placeholder="Type a password to test" />
+              <div class="meter"><span id="strengthBar"></span></div>
+              <ul class="check-list" id="passwordRules"></ul>
+            </article>
+
+            <article class="panel" id="crypto-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Web crypto</p>
+                  <h2>File Encryption / Decryption</h2>
+                </div>
+                <span class="tag">AES-GCM</span>
+              </div>
+              <label class="file-drop">
+                <input id="cryptoFile" type="file" />
+                <span id="fileName">Choose a file</span>
+              </label>
+              <input id="cryptoKey" type="password" placeholder="Secret passphrase" />
+              <div class="button-row">
+                <button class="primary-button" id="encryptBtn" type="button">Encrypt</button>
+                <button class="secondary-button" id="decryptBtn" type="button">Decrypt</button>
+              </div>
+              <p class="hint">Runs in your browser. Files are not uploaded.</p>
+            </article>
+
+            <article class="panel wide" id="scanner-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Recon tool</p>
+                  <h2>Port Scanner</h2>
+                </div>
+                <span class="tag">Browser-safe</span>
+              </div>
+              <div class="scan-form">
+                <input id="scanHost" value="localhost" placeholder="Host, e.g. localhost" />
+                <input id="scanPorts" value="22,80,443,3000,5000,8080" placeholder="Ports" />
+                <button class="primary-button" id="scanBtn" type="button">Scan</button>
+              </div>
+              <div class="scan-results" id="scanResults"></div>
+            </article>
+
+            <article class="panel" id="twofa-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Access control</p>
+                  <h2>2FA OTP Verifier</h2>
+                </div>
+                <span class="tag" id="otpStatus">Ready</span>
+              </div>
+              <div class="code-box" id="otpCode">------</div>
+              <div class="scan-form">
+                <input id="otpInput" inputmode="numeric" maxlength="6" placeholder="Enter OTP" />
+                <button class="primary-button" id="generateOtp" type="button">Generate</button>
+                <button class="secondary-button" id="verifyOtp" type="button">Verify</button>
+              </div>
+              <p class="hint">Demo OTP expires after 60 seconds.</p>
+            </article>
+
+            <article class="panel" id="health-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Live monitor</p>
+                  <h2>System Health</h2>
+                </div>
+                <span class="tag" id="healthTag">Stable</span>
+              </div>
+              <div class="health-grid">
+                <div><span>CPU Load</span><strong id="cpuLoad">42%</strong></div>
+                <div><span>Memory</span><strong id="memoryLoad">58%</strong></div>
+                <div><span>Network</span><strong id="networkLoad">31%</strong></div>
+              </div>
+              <button class="secondary-button" id="refreshHealth" type="button">Refresh Health</button>
+            </article>
+
+            <article class="panel" id="firewall-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Network defense</p>
+                  <h2>Firewall Rule Simulator</h2>
+                </div>
+                <span class="tag">Local rules</span>
+              </div>
+              <div class="scan-form">
+                <input id="firewallInput" placeholder="IP or domain to block" />
+                <button class="primary-button" id="addFirewallRule" type="button">Block</button>
+              </div>
+              <ul class="rule-list" id="firewallRules"></ul>
+            </article>
+
+            <article class="panel" id="incident-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Response desk</p>
+                  <h2>Incident Tracker</h2>
+                </div>
+                <span class="tag" id="incidentStatus">0 Open</span>
+              </div>
+              <div class="scan-form">
+                <input id="incidentInput" placeholder="Describe security incident" />
+                <button class="primary-button" id="addIncident" type="button">Add</button>
+              </div>
+              <ul class="rule-list" id="incidentList"></ul>
+            </article>
+
+            <article class="panel wide" id="checklist-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Hardening</p>
+                  <h2>Security Checklist</h2>
+                </div>
+                <span class="tag" id="checklistScore">0%</span>
+              </div>
+              <div class="checklist-grid" id="securityChecklist"></div>
+            </article>
+
+            <article class="panel" id="reports-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Summary</p>
+                  <h2>Security Reports</h2>
+                </div>
+                <button class="secondary-button small" id="downloadReport" type="button">Download</button>
+              </div>
+              <div class="report-box" id="reportBox"></div>
+            </article>
+
+            <article class="panel">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Audit trail</p>
+                  <h2>Activity Logs</h2>
+                </div>
+                <button class="secondary-button small" id="clearLogs" type="button">Clear</button>
+              </div>
+              <ol class="logs" id="activityLogs"></ol>
+            </article>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>
