@@ -10,10 +10,14 @@ const riskScoreEl = document.querySelector("#riskScore");
 const reportBox = document.querySelector("#reportBox");
 const incidentCountEl = document.querySelector("#incidentCount");
 const firewallCountEl = document.querySelector("#firewallCount");
+const threatCheckCountEl = document.querySelector("#threatCheckCount");
+const passwordGenCountEl = document.querySelector("#passwordGenCount");
 
 const state = {
   encryptedFiles: 0,
   openPorts: 0,
+  threatChecks: 0,
+  generatedPasswords: 0,
   logs: JSON.parse(localStorage.getItem("cyberLogs") || "[]"),
   firewallRules: JSON.parse(localStorage.getItem("cyberFirewallRules") || "[]"),
   incidents: JSON.parse(localStorage.getItem("cyberIncidents") || "[]"),
@@ -44,10 +48,13 @@ function renderReport() {
   openPortCountEl.textContent = state.openPorts;
   incidentCountEl.textContent = state.incidents.length;
   firewallCountEl.textContent = state.firewallRules.length;
+  threatCheckCountEl.textContent = state.threatChecks;
+  passwordGenCountEl.textContent = state.generatedPasswords;
   reportBox.innerHTML = `
     <strong>Current summary</strong><br>
     Risk score is ${riskScoreEl.textContent}/100. ${state.openPorts} open ports were found in the last scan.
     ${state.incidents.length} incident(s) are open and ${state.firewallRules.length} firewall rule(s) are active.
+    ${state.threatChecks} phishing/spam check(s) and ${state.generatedPasswords} password generation(s) ran this session.
     Hardening checklist is ${hardeningScore}% complete. Logs are stored locally in this browser.
   `;
 }
@@ -203,6 +210,231 @@ function likelyWebService(port) {
   return [80, 443, 3000, 5000, 5173, 8000, 8080].includes(port);
 }
 
+const suspiciousUrlWords = [
+  "login", "verify", "secure", "account", "update", "wallet", "free", "gift",
+  "bonus", "password", "bank", "support", "limited", "claim", "reset",
+];
+
+const riskyTlds = ["zip", "mov", "xyz", "top", "click", "country", "gq", "tk"];
+
+function parseUrl(value) {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+  try {
+    return new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
+  } catch {
+    return null;
+  }
+}
+
+function scoreUrl(rawUrl) {
+  const url = parseUrl(rawUrl);
+  const findings = [];
+  let score = 0;
+
+  if (!url) {
+    return { score: 100, level: "High", className: "risk-high", findings: ["Invalid or malformed URL."] };
+  }
+
+  const host = url.hostname.toLowerCase();
+  const full = url.href.toLowerCase();
+  const labels = host.split(".");
+  const tld = labels.at(-1) || "";
+
+  if (url.protocol !== "https:") {
+    score += 24;
+    findings.push("URL is not using HTTPS.");
+  } else {
+    findings.push("HTTPS is present.");
+  }
+
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) {
+    score += 22;
+    findings.push("Uses raw IP address instead of a domain.");
+  }
+
+  if (host.includes("xn--")) {
+    score += 18;
+    findings.push("Contains punycode, which can hide lookalike characters.");
+  }
+
+  if (labels.length > 4) {
+    score += 14;
+    findings.push("Has many subdomains, often used to disguise destination.");
+  }
+
+  if (host.length > 38 || full.length > 95) {
+    score += 12;
+    findings.push("URL is unusually long.");
+  }
+
+  if ((full.match(/-/g) || []).length >= 3) {
+    score += 8;
+    findings.push("Contains many hyphens.");
+  }
+
+  if (riskyTlds.includes(tld)) {
+    score += 14;
+    findings.push(`Uses higher-risk TLD .${tld}.`);
+  }
+
+  const wordHits = suspiciousUrlWords.filter((word) => full.includes(word));
+  if (wordHits.length) {
+    score += Math.min(24, wordHits.length * 6);
+    findings.push(`Suspicious keyword(s): ${wordHits.join(", ")}.`);
+  }
+
+  if (url.search.length > 60) {
+    score += 8;
+    findings.push("Query string is long and may hide tracking or redirects.");
+  }
+
+  const finalScore = Math.min(100, score);
+  const level = finalScore >= 60 ? "High" : finalScore >= 30 ? "Medium" : "Low";
+  const className = finalScore >= 60 ? "risk-high" : finalScore >= 30 ? "risk-medium" : "risk-low";
+  if (findings.length === 1 && findings[0] === "HTTPS is present.") findings.push("No major phishing indicators found by local heuristics.");
+  return { score: finalScore, level, className, findings, url };
+}
+
+function renderFindingBox(element, result, title) {
+  element.innerHTML = `
+    <strong>${title}: <span class="${result.className}">${result.level} risk (${result.score}/100)</span></strong>
+    <ul class="check-list">${result.findings.map((finding) => `<li>${escapeHtml(finding)}</li>`).join("")}</ul>
+  `;
+}
+
+document.querySelector("#scanPhishingUrl").addEventListener("click", () => {
+  const result = scoreUrl(document.querySelector("#phishingUrl").value);
+  document.querySelector("#phishingScoreTag").textContent = `${result.level} Risk`;
+  renderFindingBox(document.querySelector("#phishingResult"), result, "Website scan");
+  state.threatChecks += 1;
+  addLog(`Phishing website scan completed: ${result.level} risk`);
+  renderReport();
+});
+
+const emailRiskWords = [
+  "urgent", "verify", "password", "suspended", "limited time", "click here",
+  "invoice", "wire transfer", "gift card", "lottery", "winner", "kyc",
+  "bank account", "reset your account", "confirm your identity", "attachment",
+];
+
+document.querySelector("#scanEmail").addEventListener("click", () => {
+  const subject = document.querySelector("#emailSubject").value.trim();
+  const body = document.querySelector("#emailBody").value.trim();
+  const text = `${subject} ${body}`.toLowerCase();
+  const findings = [];
+  let score = 0;
+
+  const hits = emailRiskWords.filter((word) => text.includes(word));
+  if (hits.length) {
+    score += Math.min(42, hits.length * 7);
+    findings.push(`Risk phrase(s): ${hits.join(", ")}.`);
+  }
+  const urls = body.match(/https?:\/\/[^\s]+/gi) || [];
+  if (urls.length) {
+    score += Math.min(24, urls.length * 8);
+    findings.push(`${urls.length} link(s) found in email body.`);
+    const highestUrl = urls.map(scoreUrl).sort((a, b) => b.score - a.score)[0];
+    score += Math.round(highestUrl.score / 4);
+    findings.push(`Highest linked URL risk: ${highestUrl.level} (${highestUrl.score}/100).`);
+  }
+  if (/[A-Z]{8,}/.test(subject)) {
+    score += 8;
+    findings.push("Subject has shouting-style uppercase text.");
+  }
+  if (/(\.zip|\.exe|\.scr|\.js|\.bat)\b/i.test(body)) {
+    score += 18;
+    findings.push("Mentions risky attachment type.");
+  }
+  if (!body) {
+    score = 0;
+    findings.push("Paste an email body for a better check.");
+  }
+  if (!findings.length) findings.push("No major spam/phishing indicators found by local heuristics.");
+
+  const finalScore = Math.min(100, score);
+  const result = {
+    score: finalScore,
+    level: finalScore >= 60 ? "High" : finalScore >= 30 ? "Medium" : "Low",
+    className: finalScore >= 60 ? "risk-high" : finalScore >= 30 ? "risk-medium" : "risk-low",
+    findings,
+  };
+  document.querySelector("#emailScoreTag").textContent = `${result.level} Risk`;
+  renderFindingBox(document.querySelector("#emailResult"), result, "Email scan");
+  state.threatChecks += 1;
+  addLog(`Email spam/phishing scan completed: ${result.level} risk`);
+  renderReport();
+});
+
+function generateSecurePassword(length, useSymbols, useNumbers) {
+  const lower = "abcdefghijkmnopqrstuvwxyz";
+  const upper = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const numbers = "23456789";
+  const symbols = "!@#$%^&*_-+=?";
+  const pools = [lower, upper];
+  if (useNumbers) pools.push(numbers);
+  if (useSymbols) pools.push(symbols);
+  const all = pools.join("");
+  const bytes = new Uint32Array(length);
+  crypto.getRandomValues(bytes);
+  const chars = pools.map((pool, index) => pool[bytes[index] % pool.length]);
+  for (let index = chars.length; index < length; index += 1) {
+    chars.push(all[bytes[index] % all.length]);
+  }
+  return chars.sort(() => crypto.getRandomValues(new Uint32Array(1))[0] - 2147483648).join("");
+}
+
+document.querySelector("#generatePassword").addEventListener("click", () => {
+  const length = Math.max(8, Math.min(40, Number(document.querySelector("#passwordLength").value) || 18));
+  const password = generateSecurePassword(
+    length,
+    document.querySelector("#includeSymbols").checked,
+    document.querySelector("#includeNumbers").checked,
+  );
+  document.querySelector("#generatedPassword").textContent = password;
+  document.querySelector("#generatedStrength").textContent = length >= 16 ? "Very Strong" : "Strong";
+  state.generatedPasswords += 1;
+  addLog("Generated secure password");
+  renderReport();
+});
+
+document.querySelector("#copyPassword").addEventListener("click", async () => {
+  const password = document.querySelector("#generatedPassword").textContent;
+  if (!password || password === "Click generate") return alert("Generate a password first.");
+  try {
+    await navigator.clipboard.writeText(password);
+    addLog("Copied generated password");
+  } catch {
+    prompt("Copy password:", password);
+  }
+});
+
+document.querySelector("#analyzeUrl").addEventListener("click", () => {
+  const input = document.querySelector("#urlAnalyzerInput").value;
+  const result = scoreUrl(input);
+  document.querySelector("#urlRiskTag").textContent = `${result.level} Risk`;
+  const url = result.url;
+  const facts = url
+    ? [
+        `Protocol: ${url.protocol.replace(":", "")}`,
+        `Hostname: ${url.hostname}`,
+        `Path length: ${url.pathname.length}`,
+        `Query parameters: ${Array.from(url.searchParams.keys()).length}`,
+        `URL length: ${url.href.length}`,
+      ]
+    : ["Unable to parse URL."];
+  document.querySelector("#urlFacts").innerHTML = `
+    <strong>URL risk: <span class="${result.className}">${result.level} (${result.score}/100)</span></strong>
+    <ul class="check-list">
+      ${facts.map((fact) => `<li>${escapeHtml(fact)}</li>`).join("")}
+      ${result.findings.map((finding) => `<li>${escapeHtml(finding)}</li>`).join("")}
+    </ul>
+  `;
+  state.threatChecks += 1;
+  addLog(`URL analyzer completed: ${result.level} risk`);
+  renderReport();
+});
+
 document.querySelector("#generateOtp").addEventListener("click", () => {
   state.currentOtp = String(Math.floor(100000 + Math.random() * 900000));
   state.otpExpiresAt = Date.now() + 60000;
@@ -353,6 +585,8 @@ document.querySelector("#downloadReport").addEventListener("click", () => {
     `Open Ports Found: ${state.openPorts}`,
     `Active Incidents: ${state.incidents.length}`,
     `Firewall Rules: ${state.firewallRules.length}`,
+    `Threat Checks This Session: ${state.threatChecks}`,
+    `Generated Passwords This Session: ${state.generatedPasswords}`,
     `Checklist Score: ${getChecklistScore()}%`,
     "",
     "Firewall Rules:",
