@@ -48,6 +48,10 @@
             <a href="#password-card">Password</a>
             <a href="#crypto-card">File Crypto</a>
             <a href="#scanner-card">Port Scanner</a>
+            <a href="#phishing-card">Phishing</a>
+            <a href="#email-card">Email Guard</a>
+            <a href="#generator-card">Generator</a>
+            <a href="#url-card">URL Analyzer</a>
             <a href="#twofa-card">2FA</a>
             <a href="#firewall-card">Firewall</a>
             <a href="#incident-card">Incidents</a>
@@ -95,6 +99,16 @@
               <span>Firewall Rules</span>
               <strong id="firewallCount">0</strong>
               <small>Block list</small>
+            </article>
+            <article>
+              <span>Threat Checks</span>
+              <strong id="threatCheckCount">0</strong>
+              <small>URLs and emails</small>
+            </article>
+            <article>
+              <span>Passwords Made</span>
+              <strong id="passwordGenCount">0</strong>
+              <small>Session count</small>
             </article>
           </section>
 
@@ -146,6 +160,73 @@
                 <button class="primary-button" id="scanBtn" type="button">Scan</button>
               </div>
               <div class="scan-results" id="scanResults"></div>
+            </article>
+
+            <article class="panel wide" id="phishing-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Website threat intelligence</p>
+                  <h2>Phishing Website Detection System</h2>
+                </div>
+                <span class="tag" id="phishingScoreTag">Not scanned</span>
+              </div>
+              <div class="scan-form">
+                <input id="phishingUrl" placeholder="Paste suspicious website URL" />
+                <button class="primary-button" id="scanPhishingUrl" type="button">Detect</button>
+              </div>
+              <div class="analysis-box" id="phishingResult">Enter a URL to inspect domain, HTTPS, suspicious words, redirects, and URL structure.</div>
+            </article>
+
+            <article class="panel" id="email-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Inbox defense</p>
+                  <h2>Email Spam & Phishing Detector</h2>
+                </div>
+                <span class="tag" id="emailScoreTag">Ready</span>
+              </div>
+              <input id="emailSubject" placeholder="Email subject" />
+              <textarea id="emailBody" placeholder="Paste email body, sender text, links, or offer message"></textarea>
+              <button class="primary-button" id="scanEmail" type="button">Analyze Email</button>
+              <div class="analysis-box" id="emailResult">Checks urgency, credential requests, links, suspicious offers, and attachment language.</div>
+            </article>
+
+            <article class="panel" id="generator-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">Credential tool</p>
+                  <h2>Password Generator</h2>
+                </div>
+                <span class="tag" id="generatedStrength">Strong</span>
+              </div>
+              <div class="generator-row">
+                <label>
+                  Length
+                  <input id="passwordLength" type="number" min="8" max="40" value="18" />
+                </label>
+                <label class="check-item compact"><input id="includeSymbols" type="checkbox" checked /> <span>Symbols</span></label>
+                <label class="check-item compact"><input id="includeNumbers" type="checkbox" checked /> <span>Numbers</span></label>
+              </div>
+              <div class="generated-password" id="generatedPassword">Click generate</div>
+              <div class="button-row">
+                <button class="primary-button" id="generatePassword" type="button">Generate</button>
+                <button class="secondary-button" id="copyPassword" type="button">Copy</button>
+              </div>
+            </article>
+
+            <article class="panel wide" id="url-card">
+              <div class="panel-head">
+                <div>
+                  <p class="eyebrow">URL forensics</p>
+                  <h2>URL Analyzer</h2>
+                </div>
+                <span class="tag" id="urlRiskTag">Waiting</span>
+              </div>
+              <div class="scan-form">
+                <input id="urlAnalyzerInput" placeholder="https://example.com/login?next=..." />
+                <button class="primary-button" id="analyzeUrl" type="button">Analyze</button>
+              </div>
+              <div class="url-facts" id="urlFacts"></div>
             </article>
 
             <article class="panel" id="twofa-card">
