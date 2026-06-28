@@ -1,16 +1,17 @@
 :root {
   color-scheme: dark;
-  --bg: #080b10;
-  --panel: #101722;
-  --panel-2: #151d2a;
-  --text: #edf5ff;
-  --muted: #93a4b8;
+  --bg: #020504;
+  --panel: #07100d;
+  --panel-2: #0b1813;
+  --text: #e8fff6;
+  --muted: #83a99b;
   --line: rgba(255, 255, 255, 0.1);
-  --teal: #28e0c4;
+  --teal: #00ff88;
   --amber: #ffbd59;
   --red: #ff5d6c;
-  --green: #52e695;
-  --blue: #64a6ff;
+  --green: #00ff88;
+  --blue: #37f5ff;
+  --terminal: "Cascadia Mono", "Consolas", "Courier New", monospace;
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -21,8 +22,46 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background: var(--bg);
+  background:
+    radial-gradient(circle at 18% 12%, rgba(0, 255, 136, 0.12), transparent 28%),
+    radial-gradient(circle at 88% 0%, rgba(55, 245, 255, 0.1), transparent 24%),
+    linear-gradient(180deg, #020504, #050807 55%, #010302);
   color: var(--text);
+  overflow-x: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 136, 0.025) 1px, transparent 1px);
+  background-size: 100% 4px, 44px 44px;
+  mix-blend-mode: screen;
+}
+
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(0, 255, 136, 0.08), transparent);
+  animation: sweep 5s linear infinite;
+  opacity: 0.45;
+}
+
+#matrixRain {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.26;
+  pointer-events: none;
 }
 
 button,
@@ -36,6 +75,8 @@ textarea {
 }
 
 .app-shell {
+  position: relative;
+  z-index: 2;
   min-height: 100vh;
 }
 
@@ -44,8 +85,8 @@ textarea {
   justify-content:center;
   align-items:center;
   min-height: 100vh;
-   background:
-      linear-gradient(rgba(8, 11, 16,.75), rgba(8, 11, 16,.75)),
+  background:
+      linear-gradient(135deg, rgba(0, 0, 0, 0.82), rgba(0, 25, 16, 0.78)),
     url("cyber-hero.png");
 
     background-size:cover;
@@ -62,13 +103,27 @@ textarea {
     max-width:450px;
 
     padding:40px;
-    border-radius:18px;
+    border-radius:8px;
 
-    background:rgba(15,22,34,.92);
+    background:rgba(2, 8, 6, .9);
     backdrop-filter:blur(15px);
 
-    border:1px solid rgba(255,255,255,.15);
-    box-shadow:0 0 40px rgba(0,0,0,.5);
+    border:1px solid rgba(0,255,136,.38);
+    box-shadow:0 0 44px rgba(0,255,136,.18), inset 0 0 28px rgba(0,255,136,.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.login-panel::before,
+.panel::before,
+.metric-grid article::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-top: 1px solid rgba(0, 255, 136, 0.5);
+  transform: translateX(-110%);
+  animation: panelScan 4.5s linear infinite;
 }
 
 .brand-row {
@@ -84,15 +139,18 @@ textarea {
 .brand-mark {
   width:70px;
     height:70px;
-    border-radius:50%;
+    border-radius:8px;
     display:flex;
     justify-content:center;
     align-items:center;
 
     font-size:36px;
 
-    background:rgba(40,224,196,.15);
-    border:2px solid #28e0c4;
+    background:rgba(0,255,136,.12);
+    border:2px solid #00ff88;
+    color: var(--green);
+    font-family: var(--terminal);
+    text-shadow: 0 0 16px rgba(0,255,136,.85);
 
     animation:shieldPulse 2s infinite;
 }
@@ -122,12 +180,43 @@ textarea {
   font-weight: 800;
   letter-spacing: 0;
   text-transform: uppercase;
+  font-family: var(--terminal);
 }
 
 h1,
 h2 {
   margin: 0;
   letter-spacing: 0;
+  text-shadow: 0 0 18px rgba(0,255,136,.18);
+}
+
+.glitch-title {
+  position: relative;
+  font-family: var(--terminal);
+  text-transform: uppercase;
+}
+
+.glitch-title::before,
+.glitch-title::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.glitch-title::before {
+  color: var(--blue);
+  transform: translate(2px, 0);
+  clip-path: inset(0 0 55% 0);
+  animation: glitchShift 2.9s infinite steps(2, end);
+}
+
+.glitch-title::after {
+  color: var(--red);
+  transform: translate(-2px, 0);
+  clip-path: inset(55% 0 0 0);
+  animation: glitchShift 3.6s infinite steps(2, end) reverse;
 }
 
 .login-panel h1 {
@@ -142,6 +231,10 @@ h2 {
   line-height: 1.6;
 }
 
+.terminal-copy {
+  font-family: var(--terminal);
+}
+
 label {
   display: grid;
   gap: 8px;
@@ -154,11 +247,12 @@ textarea {
   width: 100%;
   min-height: 48px;
   padding: 0 14px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(0,255,136,.2);
   border-radius: 8px;
   outline: none;
-  background: #0d131d;
+  background: rgba(0, 10, 7, .82);
   color: var(--text);
+  font-family: var(--terminal);
 }
 
 textarea {
@@ -181,14 +275,17 @@ textarea:focus {
   border: 0;
   border-radius: 8px;
   color: #06100f;
-  background: var(--teal);
+  background: linear-gradient(135deg, var(--teal), #37f5ff);
   font-weight: 800;
   cursor: pointer;
+  font-family: var(--terminal);
+  text-transform: uppercase;
+  box-shadow: 0 0 20px rgba(0,255,136,.18);
 }
 
 .secondary-button {
-  border: 1px solid var(--line);
-  background: var(--panel-2);
+  border: 1px solid rgba(0,255,136,.22);
+  background: rgba(0, 18, 12, .78);
   color: var(--text);
 }
 
@@ -214,7 +311,7 @@ textarea:focus {
 .dashboard {
   display: grid;
   min-height: 100vh;
-  grid-template-columns: 270px minmax(0, 1fr);
+  grid-template-columns: 286px minmax(0, 1fr);
 }
 
 .sidebar {
@@ -225,8 +322,9 @@ textarea:focus {
   flex-direction: column;
   gap: 28px;
   padding: 24px;
-  border-right: 1px solid var(--line);
-  background: #0a0f16;
+  border-right: 1px solid rgba(0,255,136,.2);
+  background: rgba(1, 7, 5, .94);
+  box-shadow: 18px 0 36px rgba(0,0,0,.34);
 }
 
 .sidebar h2 {
@@ -244,13 +342,16 @@ textarea:focus {
   border-radius: 8px;
   color: var(--muted);
   text-decoration: none;
+  font-family: var(--terminal);
+  font-size: .9rem;
 }
 
 .nav-list a.active,
 .nav-list a:hover {
-  border-color: var(--line);
-  background: var(--panel);
+  border-color: rgba(0,255,136,.35);
+  background: rgba(0,255,136,.08);
   color: var(--text);
+  box-shadow: inset 3px 0 0 var(--green);
 }
 
 .sidebar .ghost-button {
@@ -261,7 +362,7 @@ textarea:focus {
   min-width: 0;
   padding: 28px;
   background:
-    linear-gradient(rgba(8, 11, 16, 0.88), rgba(8, 11, 16, 0.96)),
+    linear-gradient(rgba(1, 5, 4, 0.88), rgba(1, 4, 3, 0.97)),
     url("cyber-hero.png") top right / 880px auto no-repeat fixed;
 }
 
@@ -282,12 +383,13 @@ textarea:focus {
   align-items: center;
   gap: 9px;
   padding: 10px 14px;
-  border: 1px solid rgba(82, 230, 149, 0.3);
-  border-radius: 999px;
-  background: rgba(82, 230, 149, 0.1);
+  border: 1px solid rgba(0, 255, 136, 0.36);
+  border-radius: 8px;
+  background: rgba(0, 255, 136, 0.1);
   color: var(--green);
   font-weight: 800;
   white-space: nowrap;
+  font-family: var(--terminal);
 }
 
 .status-pill span {
@@ -307,10 +409,14 @@ textarea:focus {
 
 .metric-grid article,
 .panel {
-  border: 1px solid var(--line);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(0,255,136,.18);
   border-radius: 8px;
-  background: rgba(16, 23, 34, 0.92);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+  background:
+    linear-gradient(180deg, rgba(0,255,136,.055), transparent 38%),
+    rgba(4, 13, 10, 0.92);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.32), inset 0 0 22px rgba(0,255,136,.035);
 }
 
 .metric-grid article {
@@ -326,6 +432,9 @@ textarea:focus {
 
 .metric-grid strong {
   font-size: 2.1rem;
+  color: var(--green);
+  font-family: var(--terminal);
+  text-shadow: 0 0 12px rgba(0,255,136,.35);
 }
 
 .panel-grid {
@@ -360,17 +469,19 @@ textarea:focus {
 
 .panel h2 {
   font-size: 1.22rem;
+  font-family: var(--terminal);
 }
 
 .tag {
   padding: 7px 10px;
-  border: 1px solid rgba(100, 166, 255, 0.25);
-  border-radius: 999px;
-  background: rgba(100, 166, 255, 0.1);
+  border: 1px solid rgba(55, 245, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(55, 245, 255, 0.08);
   color: var(--blue);
   font-size: 0.82rem;
   font-weight: 800;
   white-space: nowrap;
+  font-family: var(--terminal);
 }
 
 .meter {
@@ -433,11 +544,12 @@ textarea:focus {
 .url-facts {
   min-height: 84px;
   padding: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(0,255,136,.16);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 10, 7, .64);
   color: var(--muted);
   line-height: 1.55;
+  font-family: var(--terminal);
 }
 
 .analysis-box strong,
@@ -453,6 +565,31 @@ textarea:focus {
   font-family: "Cascadia Mono", "Consolas", monospace;
   font-size: 1.05rem;
   font-weight: 800;
+}
+
+.terminal-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: -4px 0 20px;
+}
+
+.terminal-strip div {
+  min-height: 46px;
+  padding: 12px 14px;
+  border: 1px solid rgba(0,255,136,.22);
+  border-radius: 8px;
+  background: rgba(0, 10, 7, .72);
+  color: var(--muted);
+  font-family: var(--terminal);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.terminal-strip span {
+  color: var(--green);
+  margin-right: 8px;
 }
 
 .generator-row {
@@ -483,12 +620,13 @@ textarea:focus {
   display: grid;
   min-height: 76px;
   place-items: center;
-  border: 1px solid rgba(255, 189, 89, 0.28);
+  border: 1px solid rgba(0, 255, 136, 0.28);
   border-radius: 8px;
-  background: rgba(255, 189, 89, 0.08);
-  color: var(--amber);
+  background: rgba(0, 255, 136, 0.08);
+  color: var(--green);
   font-size: clamp(1.8rem, 5vw, 3rem);
   font-weight: 900;
+  font-family: var(--terminal);
 }
 
 .health-grid,
@@ -504,9 +642,9 @@ textarea:focus {
 .health-grid div,
 .check-item {
   padding: 14px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(0,255,136,.14);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 255, 136, 0.035);
 }
 
 .health-grid span,
@@ -536,10 +674,11 @@ textarea:focus {
   justify-content: space-between;
   gap: 10px;
   padding: 10px 12px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(0,255,136,.14);
   border-radius: 8px;
   color: var(--muted);
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 255, 136, 0.035);
+  font-family: var(--terminal);
 }
 
 .rule-list button {
@@ -569,9 +708,10 @@ textarea:focus {
   display: grid;
   gap: 5px;
   padding: 12px;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(0,255,136,.14);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(0, 255, 136, 0.035);
+  font-family: var(--terminal);
 }
 
 .port-chip.open {
@@ -596,6 +736,25 @@ textarea:focus {
   margin: 0;
   color: var(--muted);
   line-height: 1.55;
+  font-family: var(--terminal);
+}
+
+@keyframes sweep {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
+
+@keyframes panelScan {
+  0% { transform: translateX(-110%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(110%); opacity: 0; }
+}
+
+@keyframes glitchShift {
+  0%, 88%, 100% { transform: translate(0, 0); opacity: 0; }
+  90% { transform: translate(3px, -1px); opacity: .75; }
+  92% { transform: translate(-2px, 1px); opacity: .55; }
+  94% { transform: translate(2px, 0); opacity: .75; }
 }
 
 .logs {
@@ -626,7 +785,8 @@ textarea:focus {
   }
 
   .metric-grid,
-  .panel-grid {
+  .panel-grid,
+  .terminal-strip {
     grid-template-columns: 1fr;
   }
 
