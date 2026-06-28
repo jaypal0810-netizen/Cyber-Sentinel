@@ -12,6 +12,7 @@ const incidentCountEl = document.querySelector("#incidentCount");
 const firewallCountEl = document.querySelector("#firewallCount");
 const threatCheckCountEl = document.querySelector("#threatCheckCount");
 const passwordGenCountEl = document.querySelector("#passwordGenCount");
+const matrixCanvas = document.querySelector("#matrixRain");
 
 const state = {
   encryptedFiles: 0,
@@ -77,6 +78,8 @@ loginForm.addEventListener("submit", (event) => {
     loginView.classList.add("hidden");
     dashboardView.classList.remove("hidden");
     addLog(`User ${username} logged in`);
+    addLog("Root session initialized");
+    addLog("Perimeter monitor attached");
     return;
   }
   addLog(`Failed login attempt for ${username || "unknown user"}`);
@@ -624,3 +627,41 @@ document.addEventListener("keydown", function (e) {
         loginForm.requestSubmit();
     }
 });
+
+function startMatrixRain() {
+  if (!matrixCanvas) return;
+  const ctx = matrixCanvas.getContext("2d");
+  const glyphs = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ#$%&*+-/<>[]{}";
+  let columns = [];
+  let width = 0;
+  let height = 0;
+  const fontSize = 15;
+
+  function resize() {
+    width = matrixCanvas.width = window.innerWidth;
+    height = matrixCanvas.height = window.innerHeight;
+    columns = Array.from({ length: Math.ceil(width / fontSize) }, () => Math.floor(Math.random() * height / fontSize));
+  }
+
+  function draw() {
+    ctx.fillStyle = "rgba(1, 5, 4, 0.16)";
+    ctx.fillRect(0, 0, width, height);
+    ctx.font = `${fontSize}px Cascadia Mono, Consolas, monospace`;
+    ctx.fillStyle = "rgba(0, 255, 136, 0.72)";
+    columns.forEach((row, index) => {
+      const text = glyphs[Math.floor(Math.random() * glyphs.length)];
+      const x = index * fontSize;
+      const y = row * fontSize;
+      ctx.fillText(text, x, y);
+      columns[index] = y > height && Math.random() > 0.975 ? 0 : row + 1;
+    });
+    window.requestAnimationFrame(draw);
+  }
+
+  resize();
+  window.addEventListener("resize", resize);
+  draw();
+}
+
+startMatrixRain();
+  
