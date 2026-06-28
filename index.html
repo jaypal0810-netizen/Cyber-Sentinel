@@ -3,10 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cyber Sentinel Dashboard</title>
+    <title>Cyber Sentinel HackOps</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <canvas id="matrixRain" aria-hidden="true"></canvas>
     <main class="app-shell">
       <section class="login-view" id="loginView">
         <div class="login-art" aria-hidden="true"></div>
@@ -16,11 +17,11 @@
                🛡️
             </div>
             <div>
-              <p class="eyebrow">24/7 Security Console</p>
-              <h1>Cyber Sentinel</h1>
+              <p class="eyebrow">Root Access Console</p>
+              <h1 class="glitch-title" data-text="Cyber Sentinel">Cyber Sentinel</h1>
             </div>
           </div>
-          <p class="lead">Secure demo login for monitoring passwords, files, ports, reports, and activity in one dark dashboard.</p>
+          <p class="lead terminal-copy">Initialize secure session to monitor passwords, files, ports, phishing signals, reports, and activity logs.</p>
           <label>
             Username
             <input id="username" autocomplete="username" placeholder="admin" required />
@@ -39,7 +40,7 @@
           <div class="brand-row compact">
             <span class="brand-mark">CS</span>
             <div>
-              <p class="eyebrow">Live Console</p>
+              <p class="eyebrow">HackOps Node</p>
               <h2>Cyber Sentinel</h2>
             </div>
           </div>
@@ -63,11 +64,17 @@
         <section class="content">
           <header class="topbar" id="overview">
             <div>
-              <p class="eyebrow">Threat posture</p>
-              <h1>Security Dashboard</h1>
+              <p class="eyebrow">Root monitor</p>
+              <h1 class="glitch-title" data-text="HackOps Command Center">HackOps Command Center</h1>
             </div>
             <div class="status-pill"><span></span> System Online</div>
           </header>
+
+          <section class="terminal-strip" aria-label="Live command console">
+            <div><span>root@sentinel:~$</span> trace --live perimeter</div>
+            <div><span>status</span> encrypted tunnel active</div>
+            <div><span>watch</span> anomaly score syncing</div>
+          </section>
 
           <section class="metric-grid" aria-label="Security metrics">
             <article>
